@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Lotería de la Ética</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(160deg, #1e3c72, #2a5298);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: white;
+}
+
+.panel {
+    width: 650px;
+    background: #111;
+    padding: 20px;
+    border-radius: 18px;
+    text-align: center;
+    box-shadow: 0 0 25px rgba(0,255,255,0.3);
+}
+
+h1 {
+    margin-bottom: 10px;
+}
+
+#cartaActual {
+    font-size: 24px;
+    margin: 15px 0;
+    color: #00ffcc;
+}
+
+.tablero {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.carta {
+    background: #222;
+    padding: 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 2px solid #444;
+}
+
+.carta.marcada {
+    background: #2ecc71;
+    border-color: white;
+    color: black;
+}
+
+button {
+    padding: 10px 15px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #e67e22;
+    color: white;
+}
+
+button:hover {
+    opacity: 0.85;
+}
+</style>
+</head>
+
+<body>
+
+<div class="panel">
+    <h1>🎴 Lotería de la Ética</h1>
+    <p>Marca los valores éticos que vayan saliendo</p>
+
+    <div id="cartaActual">Presiona iniciar</div>
+
+    <div class="tablero" id="tablero"></div>
+
+    <button onclick="iniciar()">▶ Iniciar juego</button>
+</div>
+
+<script>
+/* CARTAS ÉTICAS */
+const cartas = [
+    "Honestidad", "Respeto", "Responsabilidad", "Justicia",
+    "Solidaridad", "Empatía", "Igualdad", "Tolerancia",
+    "Integridad", "Compromiso", "Lealtad", "Transparencia"
+];
+
+let mazo = [];
+let intervalo;
+
+/* SONIDO */
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function sonido() {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.frequency.value = 500;
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.3);
+}
+
+/* CREAR TABLERO */
+const tablero = document.getElementById("tablero");
+cartas.forEach(valor => {
+    const div = document.createElement("div");
+    div.className = "carta";
+    div.textContent = valor;
+    div.onclick = () => marcar(div);
+    tablero.appendChild(div);
+});
+
+function marcar(carta) {
+    carta.classList.toggle("marcada");
+    verificarLoteria();
+}
+
+/* JUEGO */
+function iniciar() {
+    mazo = [...cartas].sort(() => Math.random() - 0.5);
+    document.getElementById("cartaActual").textContent = "Comienza el juego";
+
+    clearInterval(intervalo);
+    intervalo = setInterval(sacarCarta, 2500);
+}
+
+function sacarCarta() {
+    if (mazo.length === 0) {
+        clearInterval(intervalo);
+        return;
+    }
+
+    const carta = mazo.pop();
+    document.getElementById("cartaActual").textContent =
+        "📢 " + carta;
+    sonido();
+}
+
+function verificarLoteria() {
+    const marcadas = document.querySelectorAll(".carta.marcada").length;
+    if (marcadas >= 4) {
+        clearInterval(intervalo);
+        alert("🎉 ¡LOTERÍA ÉTICA!");
+    }
+}
+</script>
+
+</body>
+</html>
